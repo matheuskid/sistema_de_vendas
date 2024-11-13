@@ -2,7 +2,7 @@ from typing import Union
 from typing import List
 from http import HTTPStatus
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, parse_obj_as
 import pandas as pd
 
 app = FastAPI()
@@ -44,6 +44,8 @@ def adicionar_cliente(cliente: Cliente):
 
 @app.get("/clientes/", response_model=List[Cliente])
 def retorna_clientes():
-    clientes_list: List[Cliente] = pd.read_csv("clientes.csv").values.tolist()
+    clientes_list: List[Cliente] = []
+    for index, cliente in pd.read_csv("clientes.csv").iterrows():
+        clientes_list.append({"id": cliente["id"], "nome": cliente["nome"], "sexo": cliente["sexo"], "endereco": cliente["endereco"], 'email': cliente["email"], 'telefone': cliente["telefone"]})
     return clientes_list
 
