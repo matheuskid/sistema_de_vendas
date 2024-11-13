@@ -16,13 +16,16 @@ class Cliente(BaseModel):
     email: str
     telefone: str
 
-    def to_dataframe(self):
-        return pd.DataFrame({"id": self.id,
-                            "nome": self.nome,
-                            "sexo": self.sexo,
-                            "endereco": self.endereco,
-                            "email": self.email,
-                            "telefone": self.telefone})
+
+
+def to_dataframe(cliente: Cliente):
+    return pd.DataFrame({"id": [cliente.id],
+                        "nome": [cliente.nome],
+                        "sexo": [cliente.sexo],
+                        "endereco": [cliente.endereco],
+                        "email": [cliente.email],
+                        "telefone": [cliente.telefone]})
+
 
 
 clientes = pd.read_csv('clientes.csv', dtype={'id': 'Int32', 'nome': 'str', 'sexo': 'str', 'endereco': 'str', 'email': 'str', 'telefone': 'str'})
@@ -33,6 +36,5 @@ clientes = pd.read_csv('clientes.csv', dtype={'id': 'Int32', 'nome': 'str', 'sex
 def adicionar_cliente(cliente: Cliente):
     if any(cliente_atual["id"] == cliente.id for index, cliente_atual in clientes.iterrows()):
         raise HTTPException(status_code=400, detail="ID já existe.")
-    pd.concat([clientes, cliente.to_dataframe()], index="id")
-    clientes.to_csv("clientes.csv")
+    pd.concat([clientes, to_dataframe(cliente)], ignore_index=True).to_csv("clientes.csv")
     return cliente
