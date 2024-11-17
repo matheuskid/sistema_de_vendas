@@ -3,9 +3,34 @@ import hashlib
 import zipfile
 from typing import List, Type, TypeVar
 from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, APIRouter
+from Models.models import Cliente, Produto
 
 # Definindo um tipo genérico para qualquer classe que herde de BaseModel
 T = TypeVar("T", bound=BaseModel)
+
+# Função de validação genérica
+def validar_objeto(objeto):
+    if objeto is None:
+        raise HTTPException(status_code=400, detail="Dados não fornecidos.")
+    
+    # Valida se algum campo obrigatório está vazio
+    for field, value in objeto.dict().items():
+        if value is None or (isinstance(value, str) and not value.strip()):
+            raise HTTPException(status_code=400, detail=f"O campo '{field}' não pode ser vazio.")
+
+
+# Função genérica para salvar no CSV
+def salvar_no_csv(filename: str, item: Cliente | Produto):
+    try:
+        registros = ler_csv(filename, item.__class__)  
+        last_id = max([registro.id for registro in registros], default=0)
+        item.id = last_id + 1  
+        escrever_csv(filename, item)
+        return {"message": f"{item.__class__.__name__} inserido com sucesso"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao inserir {item.__class__.__name__}: {str(e)}")
+
 
 def escrever_csv(filename: str, modelo: T):
     # Adiciona um novo objeto do tipo T ao arquivo CSV
