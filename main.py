@@ -1,5 +1,8 @@
 from fastapi import FastAPI, HTTPException, APIRouter
+from fastapi.responses import FileResponse
 from Models.models import Cliente, Produto
+import zipfile
+import os
 from Utils.utils import (
     ler_csv, 
     escrever_csv, 
@@ -70,8 +73,8 @@ def quantidade_clientes():
 @router_clientes.get("/compactar", description="Compacta o arquivo CSV dos clientes.")
 def compactar_cliente_csv():
     try:
-        compactar_csv(CSV_FILE_CLIENTES)
-        return {"message": "Arquivo CSV compactado"}
+        zip_file = compactar_csv(CSV_FILE_CLIENTES)
+        return FileResponse(zip_file, media_type="application/zip", filename=os.path.basename(zip_file))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao compactar CSV: {str(e)}")
 
@@ -132,8 +135,8 @@ def quantidade_produtos():
 @router_produtos.get("/compactar", description="Compacta o arquivo CSV dos produtos.")
 def compactar_produto_csv():
     try:
-        compactar_csv(CSV_FILE_PRODUTOS)
-        return {"message": "Arquivo CSV compactado"}
+        zip_file = compactar_csv(CSV_FILE_PRODUTOS)
+        return FileResponse(zip_file, media_type="application/zip", filename=os.path.basename(zip_file))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao compactar CSV: {str(e)}")
 

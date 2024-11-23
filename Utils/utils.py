@@ -5,6 +5,8 @@ from typing import List, Type, TypeVar
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException, APIRouter
 from Models.models import Cliente, Produto
+import zipfile
+import os
 
 # Definindo um tipo genérico para qualquer classe que herde de BaseModel
 T = TypeVar("T", bound=BaseModel)
@@ -40,6 +42,14 @@ def escrever_csv(filename: str, modelo: T):
 
 def ler_csv(filename: str, modelo: Type[T]) -> List[T]:
     objetos = []
+
+    if not os.path.exists(filename):
+            with open(filename, mode="w", newline="") as file:
+                writer = csv.writer(file)
+                # Adiciona os campos do modelo como cabeçalhos no CSV
+                writer.writerow(modelo.__annotations__.keys())
+            print(f"Arquivo '{filename}' criado automaticamente com cabeçalhos.")
+
     try:
         with open(filename, mode="r") as file:
             reader = csv.reader(file)
@@ -67,53 +77,76 @@ def ler_csv(filename: str, modelo: Type[T]) -> List[T]:
         raise Exception(f"Erro ao ler o arquivo CSV: {str(e)}")
 
 
-def atualizar_csv(filename: str, id_field: str, id_value: int, modelo: T) -> bool:
-    # Atualiza um objeto do tipo T no CSV baseado no valor do id_field
+def atualizar_csv(filename: str, id_value: int, modelo: T) -> bool:
     atualizado = False
     linhas = []
+    
+    # Lê o arquivo CSV
     with open(filename, "r") as file:
         reader = csv.reader(file)
+        cabecalho = next(reader, None)  # Lê o cabeçalho (primeira linha)
+        if cabecalho:  
+            linhas.append(cabecalho)  # Adiciona o cabeçalho na nova lista
+
         for row in reader:
             if int(row[0]) == id_value:  # Assume que o ID está na primeira coluna
+                # Atualiza a linha com os valores do modelo
                 linhas.append([getattr(modelo, field) for field in modelo.__annotations__])
                 atualizado = True
             else:
                 linhas.append(row)
     
+    # Reescreve o arquivo CSV, se algo foi atualizado
     if atualizado:
         with open(filename, "w", newline="") as file:
             writer = csv.writer(file)
             writer.writerows(linhas)
+    
     return atualizado
 
-def remover_do_csv(filename: str, id_field: str, id_value: int) -> bool:
-    # Remove um objeto do tipo T do CSV baseado no valor do id_field
+
+
+def remover_do_csv(filename: str, id_value: int) -> bool:
+    # Remove um objeto do CSV baseado no valor do ID
     removido = False
     linhas = []
+
+    # Lê o arquivo CSV
     with open(filename, "r") as file:
         reader = csv.reader(file)
+        cabecalho = next(reader, None)  # Lê o cabeçalho (se houver)
+        if cabecalho:
+            linhas.append(cabecalho)  # Adiciona o cabeçalho à nova lista
+
         for row in reader:
             if int(row[0]) != id_value:  # Assume que o ID está na primeira coluna
                 linhas.append(row)
             else:
                 removido = True
-    
+
+    # Reescreve o arquivo CSV se algo foi removido
     if removido:
         with open(filename, "w", newline="") as file:
             writer = csv.writer(file)
             writer.writerows(linhas)
+
     return removido
 
+
 def contar_registros(filename: str) -> int:
-    # Conta o número de registros no arquivo CSV
+    # Conta o número de registros no arquivo CSV, ignorando o cabeçalho
     with open(filename, "r") as file:
-        return sum(1 for row in csv.reader(file) if row)
+        reader = csv.reader(file)
+        next(reader, None)  # Pula o cabeçalho
+        return sum(1 for row in reader if row)  # Conta apenas as linhas não vazias
+
 
 def compactar_csv(filename: str):
     # Compacta o arquivo CSV em um arquivo ZIP
     zip_filename = filename.replace(".csv", ".zip")
     with zipfile.ZipFile(zip_filename, "w") as zf:
         zf.write(filename)
+    return zip_filename
 
 def calcular_hash(filename: str) -> str:
     # Calcula o hash SHA256 do arquivo CSV
