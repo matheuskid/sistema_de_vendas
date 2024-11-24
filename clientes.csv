@@ -1,3 +1,12 @@
-id,nome,sexo,endereco,email,telefone
-0,ma,masc,rua,emamil,85
-1,string,string,string,string,string
+id,nome,data_nascimento,email,telefone,endereco,cidade,estado,cep
+1,Gabriel Felix,2001-02-23,gabriel@email.com,(22) 11111-1111,"Rua R, 123",Ibaretama,CE,10000-000
+2,Gabriel Alves,2003-04-21,alves@email.com,(85) 22222-1111,"Rua T, 123",Paraipaba,CE,20000-000
+3,Gustavo Fernandes,2002-08-21,gustavo@email.com,(45) 22222-3333,"Rua T, 100",Paraipaba,CE,20000-000
+4,Ezequiel Barros,2003-10-22,ezequiel@email.com,(32) 11111-3333,"Rua H, 100",Paraipaba,CE,20000-000
+5,Pedro Angelo,2002-10-26,pedro@email.com,(33) 44444-3333,"Rua Y, 100",Paraipaba,CE,20000-000
+6,Matheus Mendes,2003-02-21,matheus@email.com,(37) 77777-3333,"Rua Y, 100",Paraipaba,CE,20000-000
+7,Jubiscleison Mendes,2005-02-21,jubis@email.com,(10) 99999-3333,"Rua I, 100",Umirim,CE,20000-000
+8,Francisco Mendes,1975-01-01,franskin@email.com,(22) 55555-9999,"Rua Redentor, 23",Paraipaba,CE,03000-000
+9,Arthur Feliciano,2000-02-21,arthur@email.com,(12) 88888-3333,"Rua 21, 100",Guaramiranga,CE,50000-000
+10,Robson Barros,2003-02-21,robson@email.com,(21) 88888-3333,"Corrego, 100",Paraipaba,Cear�,10000-000
+
