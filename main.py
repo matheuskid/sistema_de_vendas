@@ -1,12 +1,10 @@
 from fastapi import FastAPI, HTTPException, APIRouter
 from fastapi.responses import FileResponse
 from Models.models import Cliente, Produto
-import zipfile
 import os
 from Utils.utils import (
     ler_csv, 
-    escrever_csv, 
-    salvar_no_csv,
+    salvar_no_csv, 
     atualizar_csv, 
     remover_do_csv, 
     contar_registros, 
@@ -15,9 +13,20 @@ from Utils.utils import (
     validar_objeto
 )
 
-app = FastAPI()
-router_clientes = APIRouter(prefix="/clientes", tags=["Clientes"])
-router_produtos = APIRouter(prefix="/produtos", tags=["Produtos"])
+app = FastAPI(
+    title="Sistema de Vendas",
+    description="API para gerenciamento de clientes e produtos.",
+    version="1.0.0",
+    swagger_ui_parameters={
+        "docExpansion": "none",  # Faz os endpoints aparecerem fechados
+        "defaultModelsExpandDepth": 0,  # Desabilita a expansão dos modelos
+        "defaultModelExpandDepth": 0,  # Desabilita a expansão de modelos
+    }
+)
+
+# Definição de routers para os recursos
+router_clientes = APIRouter(prefix="/v1/clientes", tags=["Clientes"])
+router_produtos = APIRouter(prefix="/v1/produtos", tags=["Produtos"])
 
 CSV_FILE_CLIENTES = "clientes.csv"
 CSV_FILE_PRODUTOS = "produtos.csv"
@@ -85,6 +94,7 @@ def hash_cliente_csv():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao calcular hash: {str(e)}")
 
+
 # Rotas para Produtos
 @router_produtos.post("/", description="Insere um novo produto no sistema.")
 def inserir_produto(produto: Produto):
@@ -103,7 +113,7 @@ def atualizar_produto(produto_id: int, produto: Produto):
     validar_objeto(produto)
     try:
         if produto_id is None or produto_id <= 0:
-            raise HTTPException(status_code=400, detail="ID do cliente inválido.")
+            raise HTTPException(status_code=400, detail="ID do produto inválido.")
         
         atualizado = atualizar_csv(CSV_FILE_PRODUTOS, produto_id, produto)
         if not atualizado:
@@ -116,7 +126,7 @@ def atualizar_produto(produto_id: int, produto: Produto):
 def deletar_produto(produto_id: int):
     try:
         if produto_id is None or produto_id <= 0:
-            raise HTTPException(status_code=400, detail="ID do cliente inválido.")
+            raise HTTPException(status_code=400, detail="ID do produto inválido.")
         
         removido = remover_do_csv(CSV_FILE_PRODUTOS, produto_id)
         if not removido:
@@ -146,6 +156,7 @@ def hash_produto_csv():
         return {"hash": calcular_hash(CSV_FILE_PRODUTOS)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao calcular hash: {str(e)}")
+
 
 # Registrando os routers
 app.include_router(router_clientes)
