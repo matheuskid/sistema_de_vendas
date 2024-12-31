@@ -1,7 +1,9 @@
-from fastapi import FastAPI, HTTPException, APIRouter
+from fastapi import FastAPI, HTTPException, APIRouter, Depends
 from fastapi.responses import FileResponse
-from Models.models import Cliente, Produto
-import zipfile
+from Models.models_bd import Cliente, Produto
+from sqlmodel import SQLModel, Field, select, Session
+from contextlib import asynccontextmanager
+from database import create_db_and_tables, get_session
 import os
 from Utils.utils import (
     ler_csv, 
@@ -15,7 +17,13 @@ from Utils.utils import (
     validar_objeto
 )
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
 router_clientes = APIRouter(prefix="/clientes", tags=["Clientes"])
 router_produtos = APIRouter(prefix="/produtos", tags=["Produtos"])
 
@@ -24,17 +32,18 @@ CSV_FILE_PRODUTOS = "produtos.csv"
 
 
 # Rotas para Clientes
-@router_clientes.post("/", description="Insere um novo cliente no sistema.")
-def inserir_cliente(cliente: Cliente):
-    validar_objeto(cliente)
-    return salvar_no_csv(CSV_FILE_CLIENTES, cliente)
+@router_clientes.post("/", description="Insere um novo cliente no sistema.", response_model=Cliente)
+def inserir_cliente(cliente: Cliente, session: Session = Depends(get_session)) -> Cliente:
+    session.add(cliente)
+    session.commit()
+    session.refresh(cliente)
+    return cliente
 
 @router_clientes.get("/", description="Retorna a lista de todos os clientes cadastrados.")
-def listar_clientes():
-    try:
-        return ler_csv(CSV_FILE_CLIENTES, Cliente)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao listar clientes: {str(e)}")
+def listar_clientes(session: Session = Depends(get_session)) -> list[Cliente]:
+    clientes = session.exec(select(Cliente)).all()
+    return clientes
+
 
 @router_clientes.put("/{cliente_id}", description="Atualiza as informações de um cliente existente.")
 def atualizar_cliente(cliente_id: int, cliente: Cliente):
