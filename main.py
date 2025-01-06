@@ -1,10 +1,9 @@
 from fastapi import FastAPI, HTTPException, APIRouter, Depends
-from fastapi.responses import FileResponse
 from Models.models import Cliente, Produto
-from sqlmodel import SQLModel, Field, select, Session
+from sqlalchemy import func
+from sqlmodel import select, Session
 from contextlib import asynccontextmanager
 from database import create_db_and_tables, get_session
-import os
 from Utils.utils import (
     ler_csv, 
     escrever_csv, 
@@ -34,16 +33,22 @@ CSV_FILE_PRODUTOS = "produtos.csv"
 # Rotas para Clientes
 @router_clientes.post("/", response_model=Cliente, description="Insere um novo cliente no sistema.")
 def inserir_cliente(cliente: Cliente, session: Session = Depends(get_session)) -> Cliente:
-    session.add(cliente)
-    session.commit()
-    session.refresh(cliente)
-    return cliente
+    try:
+        session.add(cliente)
+        session.commit()
+        session.refresh(cliente)
+        return cliente
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao criar cliente: {str(e)}")
+    
 
 @router_clientes.get("/", description="Retorna a lista de todos os clientes cadastrados.")
 def listar_clientes(session: Session = Depends(get_session)) -> list[Cliente]:
     try:
         clientes = session.exec(select(Cliente)).all()
         return clientes
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar clientes: {str(e)}")
 
@@ -85,34 +90,23 @@ def deletar_cliente(cliente_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=500, detail=f"Erro ao remover cliente: {str(e)}")
 
 @router_clientes.get("/quantidade", description="Retorna a quantidade total de clientes cadastrados.")
-def quantidade_clientes():
+def quantidade_clientes(session: Session = Depends(get_session)):
     try:
-        return {"quantidade": contar_registros(CSV_FILE_CLIENTES)}
+        return {"quantidade": session.exec(select(func.count()).select_from(Cliente)).one()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao contar clientes: {str(e)}")
-
-@router_clientes.get("/compactar", description="Compacta o arquivo CSV dos clientes.")
-def compactar_cliente_csv():
-    try:
-        zip_file = compactar_csv(CSV_FILE_CLIENTES)
-        return FileResponse(zip_file, media_type="application/zip", filename=os.path.basename(zip_file))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao compactar CSV: {str(e)}")
-
-@router_clientes.get("/hash", description="Calcula o hash SHA256 do CSV dos clientes.")
-def hash_cliente_csv():
-    try:
-        return {"hash": calcular_hash(CSV_FILE_CLIENTES)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao calcular hash: {str(e)}")
 
 # Rotas para Produtos
 @router_produtos.post("/", description="Insere um novo produto no sistema.")
 def inserir_produto(produto: Produto, session: Session = Depends(get_session)) -> Produto:
-    session.add(produto)
-    session.commit()
-    session.refresh(produto)
-    return produto
+    try:
+        session.add(produto)
+        session.commit()
+        session.refresh(produto)
+        return produto
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao criar produto: {str(e)}")
 
 @router_produtos.get("/", description="Retorna a lista de todos os produtos cadastrados.")
 def listar_produtos(session: Session = Depends(get_session)) -> list[Produto]:
@@ -160,26 +154,11 @@ def deletar_produto(produto_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=500, detail=f"Erro ao remover produto: {str(e)}")
 
 @router_produtos.get("/quantidade", description="Retorna a quantidade total de produtos cadastrados.")
-def quantidade_produtos():
+def quantidade_produtos(session: Session = Depends(get_session)):
     try:
-        return {"quantidade": contar_registros(CSV_FILE_PRODUTOS)}
+        return {"quantidade": session.exec(select(func.count()).select_from(Produto)).one()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao contar produtos: {str(e)}")
-
-@router_produtos.get("/compactar", description="Compacta o arquivo CSV dos produtos.")
-def compactar_produto_csv():
-    try:
-        zip_file = compactar_csv(CSV_FILE_PRODUTOS)
-        return FileResponse(zip_file, media_type="application/zip", filename=os.path.basename(zip_file))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao compactar CSV: {str(e)}")
-
-@router_produtos.get("/hash", description="Calcula o hash SHA256 do CSV dos produtos.")
-def hash_produto_csv():
-    try:
-        return {"hash": calcular_hash(CSV_FILE_PRODUTOS)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao calcular hash: {str(e)}")
 
 # Registrando os routers
 app.include_router(router_clientes)
