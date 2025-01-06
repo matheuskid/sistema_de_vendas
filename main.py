@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, APIRouter, Depends
 from fastapi.responses import FileResponse
-from Models.models_bd import Cliente, Produto
+from Models.models import Cliente, Produto
 from sqlmodel import SQLModel, Field, select, Session
 from contextlib import asynccontextmanager
 from database import create_db_and_tables, get_session
@@ -32,7 +32,7 @@ CSV_FILE_PRODUTOS = "produtos.csv"
 
 
 # Rotas para Clientes
-@router_clientes.post("/", description="Insere um novo cliente no sistema.", response_model=Cliente)
+@router_clientes.post("/", response_model=Cliente, description="Insere um novo cliente no sistema.")
 def inserir_cliente(cliente: Cliente, session: Session = Depends(get_session)) -> Cliente:
     session.add(cliente)
     session.commit()
@@ -41,34 +41,46 @@ def inserir_cliente(cliente: Cliente, session: Session = Depends(get_session)) -
 
 @router_clientes.get("/", description="Retorna a lista de todos os clientes cadastrados.")
 def listar_clientes(session: Session = Depends(get_session)) -> list[Cliente]:
-    clientes = session.exec(select(Cliente)).all()
-    return clientes
+    try:
+        clientes = session.exec(select(Cliente)).all()
+        return clientes
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao listar clientes: {str(e)}")
 
-
-@router_clientes.put("/{cliente_id}", description="Atualiza as informações de um cliente existente.")
-def atualizar_cliente(cliente_id: int, cliente: Cliente):
-    validar_objeto(cliente)
+@router_clientes.put("/{cliente_id}", response_model=Cliente, description="Atualiza as informações de um cliente existente.")
+def atualizar_cliente(cliente_id: int, cliente_atualizado: Cliente, session: Session = Depends(get_session)) -> Cliente :
     try:
         if cliente_id is None or cliente_id <= 0:
             raise HTTPException(status_code=400, detail="ID do cliente inválido.")
         
-        atualizado = atualizar_csv(CSV_FILE_CLIENTES, cliente_id, cliente)
-        if not atualizado:
+        db_cliente = session.get(Cliente, cliente_id)
+        if not db_cliente:
             raise HTTPException(status_code=404, detail="Cliente não encontrado")
+        
+        cliente_data = cliente_atualizado.model_dump(exclude_unset=True)
+        db_cliente.sqlmodel_update(cliente_data)
+        session.add(db_cliente)
+        session.commit()
+        session.refresh(db_cliente)
         return {"message": "Cliente atualizado com sucesso"}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao atualizar cliente: {str(e)}")
 
 @router_clientes.delete("/{cliente_id}", description="Remove um cliente do sistema.")
-def deletar_cliente(cliente_id: int):
+def deletar_cliente(cliente_id: int, session: Session = Depends(get_session)):
     try:
         if cliente_id is None or cliente_id <= 0:
             raise HTTPException(status_code=400, detail="ID do cliente inválido.")
         
-        removido = remover_do_csv(CSV_FILE_CLIENTES, cliente_id)
-        if not removido:
+        cliente = session.get(Cliente, cliente_id)
+        if not cliente:
             raise HTTPException(status_code=404, detail="Cliente não encontrado")
+        
+        session.delete(cliente)
+        session.commit()
         return {"message": "Cliente removido com sucesso"}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao remover cliente: {str(e)}")
 
@@ -96,41 +108,54 @@ def hash_cliente_csv():
 
 # Rotas para Produtos
 @router_produtos.post("/", description="Insere um novo produto no sistema.")
-def inserir_produto(produto: Produto):
-    validar_objeto(produto)
-    return salvar_no_csv(CSV_FILE_PRODUTOS, produto)
+def inserir_produto(produto: Produto, session: Session = Depends(get_session)) -> Produto:
+    session.add(produto)
+    session.commit()
+    session.refresh(produto)
+    return produto
 
 @router_produtos.get("/", description="Retorna a lista de todos os produtos cadastrados.")
-def listar_produtos():
+def listar_produtos(session: Session = Depends(get_session)) -> list[Produto]:
     try:
-        return ler_csv(CSV_FILE_PRODUTOS, Produto)
+        produtos = session.exec(select(Produto)).all()
+        return produtos
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar produtos: {str(e)}")
 
 @router_produtos.put("/{produto_id}", description="Atualiza as informações de um produto existente.")
-def atualizar_produto(produto_id: int, produto: Produto):
-    validar_objeto(produto)
+def atualizar_produto(produto_id: int, produto_atualizado: Produto, session: Session = Depends(get_session)) -> Produto :
     try:
         if produto_id is None or produto_id <= 0:
-            raise HTTPException(status_code=400, detail="ID do cliente inválido.")
+            raise HTTPException(status_code=400, detail="ID do produto inválido.")
         
-        atualizado = atualizar_csv(CSV_FILE_PRODUTOS, produto_id, produto)
-        if not atualizado:
+        db_produto = session.get(Cliente, produto_id)
+        if not db_produto:
             raise HTTPException(status_code=404, detail="Produto não encontrado")
+        
+        produto_data = produto_atualizado.model_dump(exclude_unset=True)
+        db_produto.sqlmodel_update(produto_data)
+        session.add(db_produto)
+        session.commit()
+        session.refresh(db_produto)
         return {"message": "Produto atualizado com sucesso"}
+    
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao atualizar produto: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao remover produto: {str(e)}")
 
 @router_produtos.delete("/{produto_id}", description="Remove um produto do sistema.")
-def deletar_produto(produto_id: int):
+def deletar_produto(produto_id: int, session: Session = Depends(get_session)):
     try:
         if produto_id is None or produto_id <= 0:
-            raise HTTPException(status_code=400, detail="ID do cliente inválido.")
+            raise HTTPException(status_code=400, detail="ID do produto inválido.")
         
-        removido = remover_do_csv(CSV_FILE_PRODUTOS, produto_id)
-        if not removido:
+        produto = session.get(Produto, produto_id)
+        if not produto:
             raise HTTPException(status_code=404, detail="Produto não encontrado")
+        
+        session.delete(produto)
+        session.commit()
         return {"message": "Produto removido com sucesso"}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao remover produto: {str(e)}")
 
