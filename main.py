@@ -51,6 +51,15 @@ def listar_clientes(session: Session = Depends(get_session)) -> list[Cliente]:
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar clientes: {str(e)}")
+    
+@router_clientes.get("/{cliente_id}", description="Retorna um cliente existente.")
+def listar_clientes(cliente_id: int, session: Session = Depends(get_session)) -> Cliente:
+    try:
+        cliente = session.get(Cliente, cliente_id)
+        return cliente
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao listar clientes: {str(e)}")
 
 @router_clientes.put("/{cliente_id}", response_model=Cliente, description="Atualiza as informações de um cliente existente.")
 def atualizar_cliente(cliente_id: int, cliente_atualizado: Cliente, session: Session = Depends(get_session)) -> Cliente :
@@ -95,6 +104,7 @@ def quantidade_clientes(session: Session = Depends(get_session)):
         return {"quantidade": session.exec(select(func.count()).select_from(Cliente)).one()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao contar clientes: {str(e)}")
+        
 
 # Rotas para Produtos
 @router_produtos.post("/", description="Insere um novo produto no sistema.")
@@ -115,6 +125,15 @@ def listar_produtos(session: Session = Depends(get_session)) -> list[Produto]:
         return produtos
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar produtos: {str(e)}")
+    
+@router_clientes.get("/{produto_id}", description="Retorna um produto existente.")
+def listar_clientes(produto_id: int, session: Session = Depends(get_session)) -> Produto:
+    try:
+        produto = session.get(Produto, produto_id)
+        return produto
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao listar clientes: {str(e)}")
 
 @router_produtos.put("/{produto_id}", description="Atualiza as informações de um produto existente.")
 def atualizar_produto(produto_id: int, produto_atualizado: Produto, session: Session = Depends(get_session)) -> Produto :
@@ -159,6 +178,13 @@ def quantidade_produtos(session: Session = Depends(get_session)):
         return {"quantidade": session.exec(select(func.count()).select_from(Produto)).one()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao contar produtos: {str(e)}")
+    
+@router_produtos.get("/categoria_qtd/{categoria}", description="Retorna a quantidade de produtos por categoria.")
+def quantidade_clientes(categoria: str, session: Session = Depends(get_session)):
+    try:
+        return {"quantidade": session.exec(select(func.count()).select_from(Produto).where(Produto.categoria == categoria)).one()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao contar produtos por categoria: {str(e)}")
 
 # Registrando os routers
 app.include_router(router_clientes)
