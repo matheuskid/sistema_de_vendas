@@ -104,6 +104,13 @@ def quantidade_clientes(session: Session = Depends(get_session)):
         return {"quantidade": session.exec(select(func.count()).select_from(Cliente)).one()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao contar clientes: {str(e)}")
+
+@router_clientes.get("/clientes_por_estado/{estado}", description="Retorna a quantidade de clientes por estado.")
+def quantidade_clientes(estado: str, session: Session = Depends(get_session)) -> list[Cliente]:
+    try:
+        return session.exec(select(Cliente).where(Cliente.estado.like(estado))).all()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao contar clientes: {str(e)}")
         
 
 # Rotas para Produtos
