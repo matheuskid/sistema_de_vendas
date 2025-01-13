@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, APIRouter
 from Models.models import Cliente, Produto
 import zipfile
 import os
+import sqlite3
 
 # Definindo um tipo genérico para qualquer classe que herde de BaseModel
 T = TypeVar("T", bound=BaseModel)
