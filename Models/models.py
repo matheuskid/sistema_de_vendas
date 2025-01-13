@@ -1,21 +1,53 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
+from datetime import datetime
+from typing import Optional, List, TypeVar, Generic
+from pydantic import BaseModel
+
+T = TypeVar('T')
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    items: List[T]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class Cliente(SQLModel, table=True):
-    __tablename__ = 'Cliente'
-    id: int | None = Field(..., primary_key=True, description="ID do cliente", schema_extra={'example': 1})
-    nome: str = Field(..., description="Nome do cliente", schema_extra={'example': "João Silva"})
-    data_nascimento: str = Field(..., description="Data de nascimento", schema_extra={'example': "1990-01-01"})
-    email: str = Field(..., description="Email do cliente", schema_extra={'example': "joao@email.com"})
-    telefone: str = Field(..., description="Telefone do cliente", schema_extra={'example': "(11) 99999-9999"})
-    endereco: str = Field(..., description="Endereço do cliente", schema_extra={'example': "Rua Exemplo, 123"})
-    cidade: str = Field(..., description="Cidade do cliente", schema_extra={'example': "São Paulo"})
-    estado: str = Field(..., description="Estado do cliente", schema_extra={'example': "SP"})
-    cep: str = Field(..., description="CEP do cliente", schema_extra={'example': "01000-000"})
+    __tablename__ = "cliente"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nome: str
+    data_nascimento: str
+    email: str
+    telefone: str
+    endereco: str
+    cidade: str
+    estado: str
+    cep: str
+    
+    # Modificando a relação para usar List["Pedido"] com ForwardRef
+    pedidos: List["Pedido"] = Relationship(back_populates="cliente", sa_relationship_kwargs={"lazy": "selectin"})
 
 class Produto(SQLModel, table=True):
-    __tablename__ = 'Produto'
-    id: int = Field(..., primary_key=True, description="ID do produto", schema_extra={'example': 101})
-    nome: str = Field(..., description="Nome do produto", schema_extra={'example': "Produto X"})
-    categoria: str = Field(..., description="Categoria do produto", schema_extra={'example': "Eletrônicos"})
-    preco: float = Field(..., description="Preço do produto", schema_extra={'example': 199.99})
-    estoque: int = Field(..., description="Quantidade em estoque", schema_extra={'example': 50})
+    __tablename__ = "produto"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nome: str
+    categoria: str
+    preco: float
+    estoque: int
+
+class Pedido(SQLModel, table=True):
+    __tablename__ = "pedido"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    cliente_id: Optional[int] = Field(foreign_key="cliente.id")  
+    data_pedido: datetime = Field(default_factory=datetime.now)
+    valor_total: float
+    status: str
+    
+    cliente: Optional["Cliente"] = Relationship(back_populates="pedidos")
+
+
+
