@@ -6,8 +6,7 @@ from contextlib import asynccontextmanager
 from database import create_db_and_tables, get_session
 from Utils.utils import (
     ler_csv, 
-    escrever_csv, 
-    salvar_no_csv,
+    salvar_no_csv, 
     atualizar_csv, 
     remover_do_csv, 
     contar_registros, 
@@ -113,6 +112,7 @@ def quantidade_clientes(estado: str, session: Session = Depends(get_session)) ->
         raise HTTPException(status_code=500, detail=f"Erro ao retornar clientes: {str(e)}")
         
 
+
 # Rotas para Produtos
 @router_produtos.post("/", description="Insere um novo produto no sistema.")
 def inserir_produto(produto: Produto, session: Session = Depends(get_session)) -> Produto:
@@ -192,6 +192,7 @@ def quantidade_clientes(categoria: str, session: Session = Depends(get_session))
         return {"quantidade": session.exec(select(func.count()).select_from(Produto).where(Produto.categoria == categoria)).one()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao contar produtos por categoria: {str(e)}")
+
 
 # Registrando os routers
 app.include_router(router_clientes)
