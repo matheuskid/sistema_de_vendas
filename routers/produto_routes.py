@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
 from sqlalchemy import func
 from Models.models import Produto, PaginatedResponse
-from database import get_session
+from Context.database import get_session
 from typing import List
 
 router = APIRouter(prefix="/produtos", tags=["Produtos"])
@@ -113,6 +113,23 @@ def listar_produtos_por_preco(preco: float, session: Session = Depends(get_sessi
         return session.exec(select(Produto).where(Produto.preco > preco)).all()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro na busca: {str(e)}")
+
+@router.get("/{produto_id}/disponibilidade")
+def verificar_disponibilidade(produto_id: int, quantidade: int, session: Session = Depends(get_session)):
+    try:
+        produto = session.get(Produto, produto_id)
+        if not produto:
+            raise HTTPException(status_code=404, detail="Produto não encontrado")
+        
+        disponivel = produto.estoque >= quantidade
+        return {
+            "produto_id": produto_id,
+            "estoque_atual": produto.estoque,
+            "quantidade_solicitada": quantidade,
+            "disponivel": disponivel
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao verificar disponibilidade: {str(e)}")
 
 
 

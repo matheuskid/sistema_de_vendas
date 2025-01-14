@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
 from sqlalchemy import func
 from Models.models import Cliente, PaginatedResponse
-from database import get_session
+from Context.database import get_session
 from typing import List
 
 router = APIRouter(prefix="/clientes", tags=["Clientes"])

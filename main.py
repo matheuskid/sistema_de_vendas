@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from database import create_db_and_tables
+from Context.database import create_db_and_tables
 from routers import cliente_routes, produto_routes, pedido_routes
 
 @asynccontextmanager
@@ -16,13 +16,13 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
     swagger_ui_parameters={    
-        "docExpansion": "none",  # Faz os endpoints aparecerem fechados
-        "defaultModelsExpandDepth": 0,  # Desabilita a expansão dos modelos    
-        "defaultModelExpandDepth": 0,  # Desabilita a expansão de modelos    
+        "docExpansion": "none",
+        "defaultModelsExpandDepth": 0,
+        "defaultModelExpandDepth": 0,
     }    
 )
 
-@app.get("/", tags=["Root"])
+@app.get("/", description="Rota inicial com informações da API")
 async def root():
     return {
         "message": "Bem-vindo à API do Sistema de Vendas",
