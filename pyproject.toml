@@ -1,7 +1,7 @@
 [project]
 name = "sistema"
 version = "0.1.0"
-description = "Add your description here"
+description = "Sistema de Gerenciamento de Pedidos com FastAPI e SQLModel"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -12,4 +12,29 @@ dependencies = [
     "ruff>=0.7.3",
     "sqlalchemy>=2.0.36",
     "sqlmodel>=0.0.22",
+    "uvicorn>=0.27.0",
+    "pydantic>=2.6.0",
+    "python-multipart>=0.0.9",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "mypy>=1.8.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+
+[tool.isort]
+profile = "black"
+line_length = 100
