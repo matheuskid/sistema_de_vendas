@@ -15,15 +15,20 @@ from Utils.utils import (
     validar_objeto
 )
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    create_db_and_tables()
-    yield
+app = FastAPI(
+    title="Sistema de Vendas",
+    description="API para gerenciamento de clientes e produtos.",
+    version="1.0.0",
+    swagger_ui_parameters={	
+        "docExpansion": "none",  # Faz os endpoints aparecerem fechados
+        "defaultModelsExpandDepth": 0,  # Desabilita a expansão dos modelos	
+        "defaultModelExpandDepth": 0,  # Desabilita a expansão de modelos	
+    }	
+)
 
-app = FastAPI(lifespan=lifespan)
-
-router_clientes = APIRouter(prefix="/clientes", tags=["Clientes"])
-router_produtos = APIRouter(prefix="/produtos", tags=["Produtos"])
+# Definição de routers para os recursos
+router_clientes = APIRouter(prefix="/v1/clientes", tags=["Clientes"])
+router_produtos = APIRouter(prefix="/v1/produtos", tags=["Produtos"])
 
 CSV_FILE_CLIENTES = "clientes.csv"
 CSV_FILE_PRODUTOS = "produtos.csv"
