@@ -109,10 +109,10 @@ def deletar_cliente(cliente_id: int, session: Session = Depends(get_session)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao remover cliente: {str(e)}")
 
-@router.get("/quantidade", description="Retorna a quantidade total de clientes cadastrados.")
+@router.get("/quantidade/", description="Retorna a quantidade total de clientes cadastrados.")
 def quantidade_clientes(session: Session = Depends(get_session)):
     try:
-        return {"quantidade": session.exec(select(func.count()).select_from(Cliente)).one()}
+        return {"Quantidade": session.exec(select(func.count()).select_from(Cliente)).one()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao contar clientes: {str(e)}")
 

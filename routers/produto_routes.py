@@ -93,17 +93,17 @@ def deletar_produto(produto_id: int, session: Session = Depends(get_session)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao remover produto: {str(e)}")
 
-@router.get("/quantidade", description="Retorna a quantidade total de produtos cadastrados.")
+@router.get("/quantidade/", description="Retorna a quantidade total de produtos cadastrados.")
 def quantidade_produtos(session: Session = Depends(get_session)):
     try:
-        return {"quantidade": session.exec(select(func.count()).select_from(Produto)).one()}
+        return {"Quantidade": session.exec(select(func.count()).select_from(Produto)).one()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao contar produtos: {str(e)}")
     
 @router.get("/categoria_qtd/{categoria}", description="Retorna a quantidade de produtos por categoria.")
 def quantidade_clientes(categoria: str, session: Session = Depends(get_session)):
     try:
-        return {"quantidade": session.exec(select(func.count()).select_from(Produto).where(Produto.categoria == categoria)).one()}
+        return {"Quantidade": session.exec(select(func.count()).select_from(Produto).where(Produto.categoria == categoria)).one()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao contar produtos por categoria: {str(e)}")
 
