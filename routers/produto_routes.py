@@ -62,7 +62,7 @@ def atualizar_produto(produto_id: int, produto_atualizado: Produto, session: Ses
         if produto_id is None or produto_id <= 0:
             raise HTTPException(status_code=400, detail="ID do produto inválido.")
         
-        db_produto = session.get(Cliente, produto_id)
+        db_produto = session.get(Produto, produto_id)
         if not db_produto:
             raise HTTPException(status_code=404, detail="Produto não encontrado")
         
