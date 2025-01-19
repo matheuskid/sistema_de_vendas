@@ -36,12 +36,6 @@ def listar_clientes(
         query = select(Cliente).offset(offset).limit(size)
         items = session.exec(query).all()
         
-        # Verifica se há itens
-        if not items:
-            print("Nenhum cliente encontrado")  # Debug
-        else:
-            print(f"Encontrados {len(items)} clientes")  # Debug
-        
         # Calcula total de páginas
         pages = -(-total // size)  # Divisão arredondada para cima
         
@@ -53,9 +47,6 @@ def listar_clientes(
             size=size,
             pages=pages
         )
-        
-        # Debug
-        print(f"Response: {response}")
         
         return response
     
