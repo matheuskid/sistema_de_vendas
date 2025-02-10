@@ -16,7 +16,6 @@ class PaginatedResponse(BaseModel, Generic[T]):
     class Config:
         arbitrary_types_allowed = True
 
-
 class Cliente(SQLModel, table=True):
     __tablename__ = "cliente"
     id: Optional[int] = Field(default=None, primary_key=True)
