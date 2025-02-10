@@ -1,12 +1,17 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from Context.database import create_db_and_tables
 from routers import cliente_routes, produto_routes, pedido_routes
+from dotenv import dotenv_values
+from pymongo import MongoClient
+
+config = dotenv_values(".env")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Criar tabelas ao iniciar
-    create_db_and_tables()
+    # Conexão com Mongo Atlas
+    app.mongodb_client = MongoClient(config["ATLAS_URI"])
+    app.database = app.mongodb_client[config["DB_NAME"]]
+    print("Connected to the MongoDB database!")
     yield
     # Limpeza ao encerrar (se necessário)
 

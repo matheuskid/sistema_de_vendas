@@ -1,3 +1,5 @@
+'''
+
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
 from sqlalchemy import func
@@ -418,3 +420,4 @@ def deletar_pedido(pedido_id: int, session: Session = Depends(get_session)):
             detail=f"Erro ao remover pedido: {str(e)}"
         )
 
+'''

@@ -1,3 +1,4 @@
+'''
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
 from sqlalchemy import func
@@ -132,5 +133,5 @@ def verificar_disponibilidade(produto_id: int, quantidade: int, session: Session
         raise HTTPException(status_code=500, detail=f"Erro ao verificar disponibilidade: {str(e)}")
 
 
-
+'''
 
