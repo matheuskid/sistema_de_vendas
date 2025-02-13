@@ -33,15 +33,11 @@ class ClienteAtualizado(BaseModel):
     estado: Optional[str] = None
     cep: Optional[str] = None
 
-class Produto(SQLModel, table=True):
-    __tablename__ = "produto"
-    id: Optional[int] = Field(default=None, primary_key=True)
+class Produto(Model):
     nome: str
     categoria: str
     preco: float
     estoque: int
-    
-    itens: List["ItemPedido"] = Relationship(back_populates="produto")
 
 '''
 class StatusPedidoEnum(str, Enum):
