@@ -19,6 +19,8 @@ dependencies = [
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
     "pymongo[svr]>=4.11",
+    "odmantic>=1.0.2",
+    "motor>=3.7.0",
 ]
 
 [project.optional-dependencies]

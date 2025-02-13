@@ -1,25 +1,20 @@
-from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
 from typing import Optional, List, TypeVar, Generic
+from odmantic import Model
 from pydantic import BaseModel
 from enum import Enum
 
 T = TypeVar('T')
 
-class PaginatedResponse(BaseModel, Generic[T]):
+class PaginatedResponse(Model, Generic[T]):
     items: List[T]
     total: int
     page: int
     size: int
     pages: int
 
-    class Config:
-        arbitrary_types_allowed = True
-
-class Cliente(SQLModel, table=True):
-    __tablename__ = "cliente"
-    id: Optional[int] = Field(default=None, primary_key=True)
-    nome: str
+class Cliente(Model):
+    nome: str 
     data_nascimento: str
     email: str
     telefone: str
@@ -28,9 +23,19 @@ class Cliente(SQLModel, table=True):
     estado: str
     cep: str
     
-    # Modificando a relação para usar List["Pedido"] com ForwardRef
-    pedidos: List["Pedido"] = Relationship(back_populates="cliente", sa_relationship_kwargs={"lazy": "selectin"})
+class ClienteAtualizado(BaseModel):
+    nome: Optional[str] = None
+    data_nascimento: Optional[str] = None
+    email: Optional[str] = None
+    telefone: Optional[str] = None
+    endereco: Optional[str] = None
+    cidade: Optional[str] = None
+    estado: Optional[str] = None
+    cep: Optional[str] = None
 
+
+
+'''
 class Produto(SQLModel, table=True):
     __tablename__ = "produto"
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -80,5 +85,5 @@ class ItemPedido(SQLModel, table=True):
     pedido: Optional["Pedido"] = Relationship(back_populates="itens")
     produto: Optional["Produto"] = Relationship(back_populates="itens")
 
-
+'''
 
