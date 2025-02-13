@@ -1,19 +1,16 @@
-'''
-from fastapi import APIRouter, HTTPException, Depends, Query
-from sqlmodel import Session, select
-from sqlalchemy import func
+
+from fastapi import APIRouter, HTTPException
 from Models.models import Produto, PaginatedResponse
-from Context.database import get_session
+from Context.database import engine
 from typing import List
+from odmantic import ObjectId, query
 
 router = APIRouter(prefix="/produtos", tags=["Produtos"])
 
-@router.post("/", description="Insere um novo produto no sistema.")
-def inserir_produto(produto: Produto, session: Session = Depends(get_session)) -> Produto:
+@router.post("/",response_model=Produto, description="Insere um novo produto no sistema.")
+async def inserir_produto(produto: Produto) -> Produto:
     try:
-        session.add(produto)
-        session.commit()
-        session.refresh(produto)
+        await engine.save(produto)
         return produto
     
     except Exception as e:
@@ -48,6 +45,7 @@ def listar_produtos(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao listar produtos: {str(e)}")
     
+'''
 @router.get("/{produto_id}", description="Retorna um produto existente.")
 def listar_clientes(produto_id: int, session: Session = Depends(get_session)) -> Produto:
     try:

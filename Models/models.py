@@ -33,9 +33,6 @@ class ClienteAtualizado(BaseModel):
     estado: Optional[str] = None
     cep: Optional[str] = None
 
-
-
-'''
 class Produto(SQLModel, table=True):
     __tablename__ = "produto"
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -46,6 +43,7 @@ class Produto(SQLModel, table=True):
     
     itens: List["ItemPedido"] = Relationship(back_populates="produto")
 
+'''
 class StatusPedidoEnum(str, Enum):
     PENDENTE = "Pendente"
     EM_PROCESSAMENTO = "Em Processamento"
